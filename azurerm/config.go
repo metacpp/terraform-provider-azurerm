@@ -127,18 +127,19 @@ type ArmClient struct {
 	redisPatchSchedulesClient redis.PatchSchedulesClient
 
 	// API Management
-	apiManagementApiClient           apimanagement.APIClient
-	apiManagementApiOperationsClient apimanagement.APIOperationClient
-	apiManagementGroupClient         apimanagement.GroupClient
-	apiManagementGroupUsersClient    apimanagement.GroupUserClient
-	apiManagementLoggerClient        apimanagement.LoggerClient
-	apiManagementProductsClient      apimanagement.ProductClient
-	apiManagementProductApisClient   apimanagement.ProductAPIClient
-	apiManagementProductGroupsClient apimanagement.ProductGroupClient
-	apiManagementPropertyClient      apimanagement.PropertyClient
-	apiManagementServiceClient       apimanagement.ServiceClient
-	apiManagementSubscriptionsClient apimanagement.SubscriptionClient
-	apiManagementUsersClient         apimanagement.UserClient
+	apiManagementApiClient                  apimanagement.APIClient
+	apiManagementApiOperationsClient        apimanagement.APIOperationClient
+	apiManagementAuthorizationServersClient apimanagement.AuthorizationServerClient
+	apiManagementGroupClient                apimanagement.GroupClient
+	apiManagementGroupUsersClient           apimanagement.GroupUserClient
+	apiManagementLoggerClient               apimanagement.LoggerClient
+	apiManagementProductsClient             apimanagement.ProductClient
+	apiManagementProductApisClient          apimanagement.ProductAPIClient
+	apiManagementProductGroupsClient        apimanagement.ProductGroupClient
+	apiManagementPropertyClient             apimanagement.PropertyClient
+	apiManagementServiceClient              apimanagement.ServiceClient
+	apiManagementSubscriptionsClient        apimanagement.SubscriptionClient
+	apiManagementUsersClient                apimanagement.UserClient
 
 	// Application Insights
 	appInsightsClient       appinsights.ComponentsClient
@@ -506,6 +507,10 @@ func (c *ArmClient) registerApiManagementServiceClients(endpoint, subscriptionId
 	apiOperationsClient := apimanagement.NewAPIOperationClientWithBaseURI(endpoint, subscriptionId)
 	c.configureClient(&apiOperationsClient.Client, auth)
 	c.apiManagementApiOperationsClient = apiOperationsClient
+
+	authorizationServersClient := apimanagement.NewAuthorizationServerClientWithBaseURI(endpoint, subscriptionId)
+	c.configureClient(&authorizationServersClient.Client, auth)
+	c.apiManagementAuthorizationServersClient = authorizationServersClient
 
 	groupsClient := apimanagement.NewGroupClientWithBaseURI(endpoint, subscriptionId)
 	c.configureClient(&groupsClient.Client, auth)
