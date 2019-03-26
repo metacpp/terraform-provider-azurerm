@@ -228,8 +228,6 @@ func resourceArmApiManagementAuthorizationServerCreateUpdate(d *schema.ResourceD
 			GrantTypes:                 grantTypes,
 
 			// Optional
-			AuthorizationMethods:       authorizationMethods,
-			BearerTokenSendingMethods:  bearerTokenSendingMethods,
 			ClientAuthenticationMethod: clientAuthenticationMethods,
 			ClientSecret:               utils.String(clientSecret),
 			DefaultScope:               utils.String(defaultScope),
@@ -238,8 +236,19 @@ func resourceArmApiManagementAuthorizationServerCreateUpdate(d *schema.ResourceD
 			ResourceOwnerUsername:      utils.String(resourceOwnerUsername),
 			SupportState:               utils.Bool(supportState),
 			TokenBodyParameters:        tokenBodyParameters,
-			TokenEndpoint:              utils.String(tokenEndpoint),
 		},
+	}
+
+	if len(authorizationMethodsRaw) > 0 {
+		params.AuthorizationServerContractProperties.AuthorizationMethods = authorizationMethods
+	}
+
+	if len(bearerTokenSendingMethodsRaw) > 0 {
+		params.AuthorizationServerContractProperties.BearerTokenSendingMethods = bearerTokenSendingMethods
+	}
+
+	if tokenEndpoint != "" {
+		params.AuthorizationServerContractProperties.TokenEndpoint = utils.String(tokenEndpoint)
 	}
 
 	if _, err := client.CreateOrUpdate(ctx, resourceGroup, serviceName, name, params, ""); err != nil {
