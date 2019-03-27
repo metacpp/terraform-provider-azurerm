@@ -3,10 +3,12 @@ package azurerm
 import (
 	"bytes"
 	"fmt"
+	"go.opencensus.io/trace"
 	"log"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -509,6 +511,21 @@ func resourceArmKubernetesClusterCreateUpdate(d *schema.ResourceData, meta inter
 	ctx := meta.(*ArmClient).StopContext
 	tenantId := meta.(*ArmClient).tenantId
 
+	if tracing.IsEnabled() {
+		rootSpan := rootSpanMap["TestAccAzureRMKubernetesCluster_basic"]
+		rootSpanCtx := rootSpan.SpanContext()
+		_, span := trace.StartSpan(ctx, "resourceArmKubernetesClusterCreateUpdate")
+		span.AddLink(trace.Link{
+			TraceID: rootSpanCtx.TraceID,
+			SpanID:  rootSpanCtx.SpanID,
+			Type:    trace.LinkTypeChild,
+			Attributes: map[string]interface{}{
+				"reason": "testcase session",
+			},
+		})
+		defer span.End()
+	}
+
 	log.Printf("[INFO] preparing arguments for Managed Kubernetes Cluster create/update.")
 
 	resGroup := d.Get("resource_group_name").(string)
@@ -597,6 +614,21 @@ func resourceArmKubernetesClusterCreateUpdate(d *schema.ResourceData, meta inter
 func resourceArmKubernetesClusterRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).kubernetesClustersClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		rootSpan := rootSpanMap["TestAccAzureRMKubernetesCluster_basic"]
+		rootSpanCtx := rootSpan.SpanContext()
+		_, span := trace.StartSpan(ctx, "resourceArmKubernetesClusterRead")
+		span.AddLink(trace.Link{
+			TraceID: rootSpanCtx.TraceID,
+			SpanID:  rootSpanCtx.SpanID,
+			Type:    trace.LinkTypeChild,
+			Attributes: map[string]interface{}{
+				"reason": "testcase session",
+			},
+		})
+		defer span.End()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
@@ -695,6 +727,21 @@ func resourceArmKubernetesClusterRead(d *schema.ResourceData, meta interface{}) 
 func resourceArmKubernetesClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).kubernetesClustersClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		rootSpan := rootSpanMap["TestAccAzureRMKubernetesCluster_basic"]
+		rootSpanCtx := rootSpan.SpanContext()
+		_, span := trace.StartSpan(ctx, "resourceArmKubernetesClusterDelete", trace.WithSampler(trace.AlwaysSample()))
+		span.AddLink(trace.Link{
+			TraceID: rootSpanCtx.TraceID,
+			SpanID:  rootSpanCtx.SpanID,
+			Type:    trace.LinkTypeChild,
+			Attributes: map[string]interface{}{
+				"reason": "testcase session",
+			},
+		})
+		defer span.End()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {

@@ -1,7 +1,10 @@
 package azurerm
 
 import (
+	"context"
 	"fmt"
+	"github.com/Azure/go-autorest/tracing"
+	"go.opencensus.io/trace"
 	"net/http"
 	"os"
 	"testing"
@@ -12,6 +15,15 @@ import (
 )
 
 func TestAccAzureRMKubernetesCluster_basic(t *testing.T) {
+	initZipkin()
+	if tracing.IsEnabled() {
+		_, span := trace.StartSpan(context.Background(), "TestAccAzureRMKubernetesCluster_basic")
+		rootSpanMap["TestAccAzureRMKubernetesCluster_basic"] = span
+		defer func() {
+			span.End()
+		}()
+	}
+
 	resourceName := "azurerm_kubernetes_cluster.test"
 	ri := tf.AccRandTimeInt()
 	clientId := os.Getenv("ARM_CLIENT_ID")

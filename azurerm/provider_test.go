@@ -2,6 +2,8 @@ package azurerm
 
 import (
 	"fmt"
+	"go.opencensus.io/exporter/zipkin"
+	"log"
 	"os"
 	"regexp"
 	"testing"
@@ -11,16 +13,34 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	openzipkin "github.com/openzipkin/zipkin-go"
+	zipkinHTTP "github.com/openzipkin/zipkin-go/reporter/http"
+	"go.opencensus.io/trace"
 )
 
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
+
+func initZipkin() {
+	localEndpoint, err := openzipkin.NewEndpoint("azurerm-002", "192.168.1.5:5454")
+	if err != nil {
+		log.Fatalf("Failed to create the local zipkinEndpoint: %v", err)
+	}
+	reporter := zipkinHTTP.NewReporter("http://localhost:9411/api/v2/spans")
+	ze := zipkin.NewExporter(reporter, localEndpoint)
+	// Register the Zipkin exporter.
+	// This step is needed so that traces can be exported.
+	trace.RegisterExporter(ze)
+
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
+}
 
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"azurerm": testAccProvider,
 	}
+	rootSpanMap = make(map[string]*trace.Span)
 }
 
 func TestProvider(t *testing.T) {

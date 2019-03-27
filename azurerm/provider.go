@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"go.opencensus.io/trace"
 	"strings"
 
 	"github.com/hashicorp/go-azure-helpers/authentication"
@@ -14,6 +15,8 @@ import (
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/suppress"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/validate"
 )
+
+var rootSpanMap map[string]*trace.Span
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
@@ -410,7 +413,9 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 			return nil, err
 		}
 
+		fmt.Printf("[DEBUG] Value of p is %p\n", p)
 		client.StopContext = p.StopContext()
+		fmt.Printf("[DEBUG] Value of client.StopContext is %p\n", &client.StopContext)
 
 		// replaces the context between tests
 		p.MetaReset = func() error {
