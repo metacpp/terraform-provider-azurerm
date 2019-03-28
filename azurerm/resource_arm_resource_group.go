@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
-
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/response"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
 )
 
@@ -36,6 +36,13 @@ func resourceArmResourceGroup() *schema.Resource {
 func resourceArmResourceGroupCreateUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, "resourceArmResourceGroupCreateUpdate")
+		defer func() {
+			tracing.EndSpan(ctx, 200, nil)
+		}()
+	}
 
 	name := d.Get("name").(string)
 	location := azureRMNormalizeLocation(d.Get("location").(string))
@@ -76,6 +83,13 @@ func resourceArmResourceGroupCreateUpdate(d *schema.ResourceData, meta interface
 func resourceArmResourceGroupRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, "resourceArmResourceGroupRead")
+		defer func() {
+			tracing.EndSpan(ctx, 200, nil)
+		}()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
@@ -130,6 +144,13 @@ func resourceArmResourceGroupExists(d *schema.ResourceData, meta interface{}) (b
 func resourceArmResourceGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		ctx = tracing.StartSpan(ctx, "resourceArmResourceGroupDelete")
+		defer func() {
+			tracing.EndSpan(ctx, 200, nil)
+		}()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {

@@ -2,11 +2,12 @@ package azurerm
 
 import (
 	"fmt"
-	"go.opencensus.io/exporter/zipkin"
 	"log"
 	"os"
 	"regexp"
 	"testing"
+
+	"go.opencensus.io/exporter/zipkin"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/hashicorp/go-azure-helpers/authentication"
@@ -22,7 +23,7 @@ var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
 
 func initZipkin() {
-	localEndpoint, err := openzipkin.NewEndpoint("azurerm-002", "192.168.1.5:5454")
+	localEndpoint, err := openzipkin.NewEndpoint("azurerm-101", "192.168.1.5:5454")
 	if err != nil {
 		log.Fatalf("Failed to create the local zipkinEndpoint: %v", err)
 	}

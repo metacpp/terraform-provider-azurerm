@@ -5,12 +5,21 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
 )
 
 func TestAccAzureRMResourceGroup_basic(t *testing.T) {
+	initZipkin()
+	if tracing.IsEnabled() {
+		ctx := tracing.StartSpan(testAccProvider.StopContext(), "TestAccAzureRMResourceGroup_basic")
+		defer func() {
+			tracing.EndSpan(ctx, 200, nil)
+		}()
+	}
+
 	resourceName := "azurerm_resource_group.test"
 	ri := tf.AccRandTimeInt()
 
