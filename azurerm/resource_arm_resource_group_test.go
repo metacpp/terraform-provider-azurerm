@@ -9,15 +9,16 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
+	"go.opencensus.io/trace"
 )
 
 func TestAccAzureRMResourceGroup_basic(t *testing.T) {
-	initZipkin()
+	util.InitZipkin("terraform-azurerm-provider")
 	if tracing.IsEnabled() {
-		ctx := tracing.StartSpan(testAccProvider.StopContext(), "TestAccAzureRMResourceGroup_basic")
-		defer func() {
-			tracing.EndSpan(ctx, 200, nil)
-		}()
+		var span *trace.Span
+		sharedContext, span = trace.StartSpan(sharedContext, util.GetCallFuncName(1))
+		defer span.End()
 	}
 
 	resourceName := "azurerm_resource_group.test"

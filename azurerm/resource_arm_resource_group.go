@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/response"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
+	"go.opencensus.io/trace"
 )
 
 func resourceArmResourceGroup() *schema.Resource {
@@ -38,10 +40,9 @@ func resourceArmResourceGroupCreateUpdate(d *schema.ResourceData, meta interface
 	ctx := meta.(*ArmClient).StopContext
 
 	if tracing.IsEnabled() {
-		ctx = tracing.StartSpan(ctx, "resourceArmResourceGroupCreateUpdate")
-		defer func() {
-			tracing.EndSpan(ctx, 200, nil)
-		}()
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
 	}
 
 	name := d.Get("name").(string)
@@ -85,10 +86,9 @@ func resourceArmResourceGroupRead(d *schema.ResourceData, meta interface{}) erro
 	ctx := meta.(*ArmClient).StopContext
 
 	if tracing.IsEnabled() {
-		ctx = tracing.StartSpan(ctx, "resourceArmResourceGroupRead")
-		defer func() {
-			tracing.EndSpan(ctx, 200, nil)
-		}()
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
 	}
 
 	id, err := parseAzureResourceID(d.Id())
@@ -122,6 +122,12 @@ func resourceArmResourceGroupExists(d *schema.ResourceData, meta interface{}) (b
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
 
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
+
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
 		return false, fmt.Errorf("Error parsing Azure Resource ID %q: %+v", d.Id(), err)
@@ -146,10 +152,9 @@ func resourceArmResourceGroupDelete(d *schema.ResourceData, meta interface{}) er
 	ctx := meta.(*ArmClient).StopContext
 
 	if tracing.IsEnabled() {
-		ctx = tracing.StartSpan(ctx, "resourceArmResourceGroupDelete")
-		defer func() {
-			tracing.EndSpan(ctx, 200, nil)
-		}()
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
 	}
 
 	id, err := parseAzureResourceID(d.Id())

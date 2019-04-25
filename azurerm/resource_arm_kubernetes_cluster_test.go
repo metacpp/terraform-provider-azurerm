@@ -1,27 +1,25 @@
 package azurerm
 
 import (
-	"context"
 	"fmt"
-	"github.com/Azure/go-autorest/tracing"
-	"go.opencensus.io/trace"
 	"net/http"
 	"os"
 	"testing"
 
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
+	"go.opencensus.io/trace"
 )
 
 func TestAccAzureRMKubernetesCluster_basic(t *testing.T) {
-	initZipkin()
+	util.InitZipkin("terraform-azurerm-provider")
 	if tracing.IsEnabled() {
-		_, span := trace.StartSpan(context.Background(), "TestAccAzureRMKubernetesCluster_basic")
-		rootSpanMap["TestAccAzureRMKubernetesCluster_basic"] = span
-		defer func() {
-			span.End()
-		}()
+		var span *trace.Span
+		sharedContext, span = trace.StartSpan(sharedContext, util.GetCallFuncName(1))
+		defer span.End()
 	}
 
 	resourceName := "azurerm_kubernetes_cluster.test"

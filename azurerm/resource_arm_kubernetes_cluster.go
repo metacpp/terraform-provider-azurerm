@@ -3,7 +3,6 @@ package azurerm
 import (
 	"bytes"
 	"fmt"
-	"go.opencensus.io/trace"
 	"log"
 	"strings"
 
@@ -16,8 +15,10 @@ import (
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/kubernetes"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/suppress"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/validate"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
+	"go.opencensus.io/trace"
 )
 
 func resourceArmKubernetesCluster() *schema.Resource {
@@ -512,17 +513,8 @@ func resourceArmKubernetesClusterCreateUpdate(d *schema.ResourceData, meta inter
 	tenantId := meta.(*ArmClient).tenantId
 
 	if tracing.IsEnabled() {
-		rootSpan := rootSpanMap["TestAccAzureRMKubernetesCluster_basic"]
-		rootSpanCtx := rootSpan.SpanContext()
-		_, span := trace.StartSpan(ctx, "resourceArmKubernetesClusterCreateUpdate")
-		span.AddLink(trace.Link{
-			TraceID: rootSpanCtx.TraceID,
-			SpanID:  rootSpanCtx.SpanID,
-			Type:    trace.LinkTypeChild,
-			Attributes: map[string]interface{}{
-				"reason": "testcase session",
-			},
-		})
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
 		defer span.End()
 	}
 
@@ -616,17 +608,8 @@ func resourceArmKubernetesClusterRead(d *schema.ResourceData, meta interface{}) 
 	ctx := meta.(*ArmClient).StopContext
 
 	if tracing.IsEnabled() {
-		rootSpan := rootSpanMap["TestAccAzureRMKubernetesCluster_basic"]
-		rootSpanCtx := rootSpan.SpanContext()
-		_, span := trace.StartSpan(ctx, "resourceArmKubernetesClusterRead")
-		span.AddLink(trace.Link{
-			TraceID: rootSpanCtx.TraceID,
-			SpanID:  rootSpanCtx.SpanID,
-			Type:    trace.LinkTypeChild,
-			Attributes: map[string]interface{}{
-				"reason": "testcase session",
-			},
-		})
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
 		defer span.End()
 	}
 
@@ -729,17 +712,8 @@ func resourceArmKubernetesClusterDelete(d *schema.ResourceData, meta interface{}
 	ctx := meta.(*ArmClient).StopContext
 
 	if tracing.IsEnabled() {
-		rootSpan := rootSpanMap["TestAccAzureRMKubernetesCluster_basic"]
-		rootSpanCtx := rootSpan.SpanContext()
-		_, span := trace.StartSpan(ctx, "resourceArmKubernetesClusterDelete", trace.WithSampler(trace.AlwaysSample()))
-		span.AddLink(trace.Link{
-			TraceID: rootSpanCtx.TraceID,
-			SpanID:  rootSpanCtx.SpanID,
-			Type:    trace.LinkTypeChild,
-			Attributes: map[string]interface{}{
-				"reason": "testcase session",
-			},
-		})
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
 		defer span.End()
 	}
 
