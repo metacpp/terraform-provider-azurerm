@@ -67,7 +67,7 @@ The following arguments are supported:
 
 * `location` - (Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
 
-* `app_service_plan_id` - (Required) The ID of the App Service Plan within which to create this App Service. Changing this forces a new resource to be created.
+* `app_service_plan_id` - (Required) The ID of the App Service Plan within which to create this App Service.
 
 * `app_settings` - (Optional) A key-value pair of App Settings.
 
@@ -77,7 +77,7 @@ The following arguments are supported:
 
 * `client_cert_enabled` - (Optional) Does the App Service require client certificates for incoming requests? Defaults to `false`.
 
-* `enabled` - (Optional) Is the App Service Enabled? Changing this forces a new resource to be created.
+* `enabled` - (Optional) Is the App Service Enabled?
 
 * `https_only` - (Optional) Can the App Service only be accessed via HTTPS? Defaults to `false`.
 
@@ -113,6 +113,8 @@ A `site_config` block supports the following:
 
 * `app_command_line` - (Optional) App command line to launch, e.g. `/sbin/myserver -b 0.0.0.0`.
 
+* `cors` - (Optional) A `cors` block as defined below.
+
 * `default_documents` - (Optional) The ordering of default documents to load, if an address isn't specified.
 
 * `dotnet_framework_version` - (Optional) The version of the .net framework's CLR used in this App Service. Possible values are `v2.0` (which will use the latest version of the .net framework for the .net CLR v2 - currently `.net 3.5`) and `v4.0` (which corresponds to the latest version of the .net CLR v4 - which at the time of writing is `.net 4.7.1`). [For more information on which .net CLR version to use based on the .net framework you're targeting - please see this table](https://en.wikipedia.org/wiki/.NET_Framework_version_history#Overview). Defaults to `v4.0`.
@@ -121,9 +123,9 @@ A `site_config` block supports the following:
 
 * `http2_enabled` - (Optional) Is HTTP2 Enabled on this App Service? Defaults to `false`.
 
-* `ip_restriction` - (Optional) One or more `ip_restriction` blocks as defined below.
+* `ip_restriction` - (Optional) A [List of objects](/docs/configuration/attr-as-blocks.html) representing ip restrictions as defined below.
 
-* `java_version` - (Optional) The version of Java to use. If specified `java_container` and `java_container_version` must also be specified. Possible values are `1.7` and `1.8`.
+* `java_version` - (Optional) The version of Java to use. If specified `java_container` and `java_container_version` must also be specified. Possible values are `1.7`, `1.8` and `11`.
 
 * `java_container` - (Optional) The Java Container to use. If specified `java_version` and `java_container_version` must also be specified. Possible values are `JETTY` and `TOMCAT`.
 
@@ -149,9 +151,7 @@ Additional examples of how to run Containers via the `azurerm_app_service` resou
 
 * `remote_debugging_version` - (Optional) Which version of Visual Studio should the Remote Debugger be compatible with? Possible values are `VS2012`, `VS2013`, `VS2015` and `VS2017`.
 
-* `scm_type` - (Optional) The type of Source Control enabled for this App Service. Possible values include `None` and `LocalGit`. Defaults to `None`.
-
-~> **NOTE:** Additional Source Control types will be added in the future, once support for them has been added in the Azure SDK for Go.
+* `scm_type` - (Optional) The type of Source Control enabled for this App Service. Defaults to `None`. Possible values are: `BitbucketGit`, `BitbucketHg`, `CodePlexGit`, `CodePlexHg`, `Dropbox`, `ExternalGit`, `ExternalHg`, `GitHub`, `LocalGit`, `None`, `OneDrive`, `Tfs`, `VSO` and `VSTSRM`
 
 * `use_32_bit_worker_process` - (Optional) Should the App Service run in 32 bit mode, rather than 64 bit mode?
 
@@ -163,7 +163,15 @@ Additional examples of how to run Containers via the `azurerm_app_service` resou
 
 ---
 
-A `ip_restriction` block supports the following:
+A `cors` block supports the following:
+
+* `allowed_origins` - (Optional) A list of origins which should be able to make cross-origin calls. `*` can be used to allow all calls.
+
+* `support_credentials` - (Optional) Are credentials supported?
+
+---
+
+Elements of `ip_restriction` support:
 
 * `ip_address` - (Required) The IP Address used for this IP Restriction.
 

@@ -2,8 +2,9 @@ package azurerm
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/validation"
 	"log"
+
+	"github.com/hashicorp/terraform/helper/validation"
 
 	"github.com/Azure/azure-sdk-for-go/services/apimanagement/mgmt/2018-01-01/apimanagement"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -30,19 +31,13 @@ func resourceArmApiManagementApiVersionSet() *schema.Resource {
 
 			"api_management_name": azure.SchemaApiManagementName(),
 
-			"description": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.NoEmptyStrings,
-			},
-
 			"display_name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.NoEmptyStrings,
 			},
 
-			"versioning_schema": {
+			"versioning_scheme": {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -52,14 +47,24 @@ func resourceArmApiManagementApiVersionSet() *schema.Resource {
 				}, false),
 			},
 
+			"description": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.NoEmptyStrings,
+			},
+
 			"version_header_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validate.NoEmptyStrings,
+				ConflictsWith: []string{"version_query_name"},
 			},
 
 			"version_query_name": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ValidateFunc:  validate.NoEmptyStrings,
+				ConflictsWith: []string{"version_header_name"},
 			},
 		},
 	}
@@ -86,16 +91,53 @@ func resourceArmApiManagementApiVersionSetCreateUpdate(d *schema.ResourceData, m
 		}
 	}
 
+	versioningScheme := apimanagement.VersioningScheme(d.Get("versioning_scheme").(string))
 	parameters := apimanagement.APIVersionSetContract{
 		APIVersionSetContractProperties: &apimanagement.APIVersionSetContractProperties{
 			DisplayName:      utils.String(d.Get("display_name").(string)),
-			VersioningScheme: apimanagement.VersioningScheme(d.Get("versioning_schema").(string)),
+			VersioningScheme: versioningScheme,
 			Description:      utils.String(d.Get("description").(string)),
 		},
 	}
 
+	var headerSet, querySet bool
+	if v, ok := d.GetOk("version_header_name"); ok {
+		headerSet = v.(string) != ""
+		parameters.APIVersionSetContractProperties.VersionHeaderName = utils.String(v.(string))
+	}
+	if v, ok := d.GetOk("version_query_name"); ok {
+		querySet = v.(string) != ""
+		parameters.APIVersionSetContractProperties.VersionQueryName = utils.String(v.(string))
+	}
+
+	switch schema := versioningScheme; schema {
+	case apimanagement.VersioningSchemeHeader:
+		if !headerSet {
+			return fmt.Errorf("`version_header_name` must be set if `versioning_schema` is `Header`")
+		}
+		if querySet {
+			return fmt.Errorf("`version_query_name` can not be set if `versioning_schema` is `Header`")
+		}
+
+	case apimanagement.VersioningSchemeQuery:
+		if headerSet {
+			return fmt.Errorf("`version_header_name` can not be set if `versioning_schema` is `Query`")
+		}
+		if !querySet {
+			return fmt.Errorf("`version_query_name` must be set if `versioning_schema` is `Query`")
+		}
+
+	case apimanagement.VersioningSchemeSegment:
+		if headerSet {
+			return fmt.Errorf("`version_header_name` can not be set if `versioning_schema` is `Segment`")
+		}
+		if querySet {
+			return fmt.Errorf("`version_query_name` can not be set if `versioning_schema` is `Segment`")
+		}
+	}
+
 	if _, err := client.CreateOrUpdate(ctx, resourceGroup, serviceName, name, parameters, ""); err != nil {
-		return fmt.Errorf("Error creating or updating Api Version Set %q (Resource Group %q / Api Management Service %q): %+v", name, resourceGroup, serviceName, err)
+		return fmt.Errorf("Error creating/updating Api Version Set %q (Resource Group %q / Api Management Service %q): %+v", name, resourceGroup, serviceName, err)
 	}
 
 	resp, err := client.Get(ctx, resourceGroup, serviceName, name)
@@ -140,7 +182,7 @@ func resourceArmApiManagementApiVersionSetRead(d *schema.ResourceData, meta inte
 	if props := resp.APIVersionSetContractProperties; props != nil {
 		d.Set("description", props.Description)
 		d.Set("display_name", props.DisplayName)
-		d.Set("versioning_schema", props.VersioningScheme)
+		d.Set("versioning_scheme", string(props.VersioningScheme))
 		d.Set("version_header_name", props.VersionHeaderName)
 		d.Set("version_query_name", props.VersionQueryName)
 	}

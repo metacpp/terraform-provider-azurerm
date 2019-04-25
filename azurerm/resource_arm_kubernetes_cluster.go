@@ -281,6 +281,7 @@ func resourceArmKubernetesCluster() *schema.Resource {
 							Type:     schema.TypeList,
 							Required: true,
 							ForceNew: true,
+							MaxItems: 1,
 
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -312,6 +313,17 @@ func resourceArmKubernetesCluster() *schema.Resource {
 							ValidateFunc: validation.StringInSlice([]string{
 								string(containerservice.Azure),
 								string(containerservice.Kubenet),
+							}, false),
+						},
+
+						"network_policy": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+							ForceNew: true,
+							ValidateFunc: validation.StringInSlice([]string{
+								string(containerservice.Calico),
+								string(containerservice.Azure),
 							}, false),
 						},
 
@@ -1034,8 +1046,11 @@ func expandKubernetesClusterNetworkProfile(d *schema.ResourceData) *containerser
 
 	networkPlugin := config["network_plugin"].(string)
 
+	networkPolicy := config["network_policy"].(string)
+
 	networkProfile := containerservice.NetworkProfile{
 		NetworkPlugin: containerservice.NetworkPlugin(networkPlugin),
+		NetworkPolicy: containerservice.NetworkPolicy(networkPolicy),
 	}
 
 	if v, ok := config["dns_service_ip"]; ok && v.(string) != "" {
@@ -1069,6 +1084,10 @@ func flattenKubernetesClusterNetworkProfile(profile *containerservice.NetworkPro
 	values := make(map[string]interface{})
 
 	values["network_plugin"] = profile.NetworkPlugin
+
+	if profile.NetworkPolicy != "" {
+		values["network_policy"] = string(profile.NetworkPolicy)
+	}
 
 	if profile.ServiceCidr != nil {
 		values["service_cidr"] = *profile.ServiceCidr
