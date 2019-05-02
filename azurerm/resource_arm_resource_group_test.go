@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccAzureRMResourceGroup_basic(t *testing.T) {
-	util.InitZipkin("terraform-azurerm-provider")
 	if tracing.IsEnabled() {
 		var span *trace.Span
 		sharedContext, span = trace.StartSpan(sharedContext, util.GetCallFuncName(1))
