@@ -1,11 +1,14 @@
 package azurerm
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"strings"
+
+	"go.opencensus.io/trace"
 
 	"github.com/hashicorp/go-azure-helpers/authentication"
 	"github.com/hashicorp/terraform/helper/mutexkv"
@@ -14,6 +17,10 @@ import (
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/suppress"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/validate"
 )
+
+var rootSpanMap map[string]*trace.Span
+
+var sharedContext context.Context
 
 // Provider returns a terraform.ResourceProvider.
 func Provider() terraform.ResourceProvider {
@@ -419,6 +426,10 @@ func Provider() terraform.ResourceProvider {
 
 	p.ConfigureFunc = providerConfigure(p)
 
+	// Initialize the shared context for all resources managed by the same process.
+	// TODO(sushi): what is the side effect to use shareable context ?
+	sharedContext = p.StopContext()
+
 	return p
 }
 
@@ -454,7 +465,7 @@ func providerConfigure(p *schema.Provider) schema.ConfigureFunc {
 			return nil, err
 		}
 
-		client.StopContext = p.StopContext()
+		client.StopContext = sharedContext
 
 		// replaces the context between tests
 		p.MetaReset = func() error {

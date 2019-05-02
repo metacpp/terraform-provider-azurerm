@@ -6,12 +6,21 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
+	"go.opencensus.io/trace"
 )
 
 func TestAccAzureRMKubernetesCluster_basic(t *testing.T) {
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		sharedContext, span = trace.StartSpan(sharedContext, util.GetCallFuncName(1))
+		defer span.End()
+	}
+
 	resourceName := "azurerm_kubernetes_cluster.test"
 	ri := tf.AccRandTimeInt()
 	clientId := os.Getenv("ARM_CLIENT_ID")

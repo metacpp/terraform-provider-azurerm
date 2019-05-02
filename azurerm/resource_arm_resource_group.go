@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
-
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/response"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
+	"go.opencensus.io/trace"
 )
 
 func resourceArmResourceGroup() *schema.Resource {
@@ -36,6 +38,12 @@ func resourceArmResourceGroup() *schema.Resource {
 func resourceArmResourceGroupCreateUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
 
 	name := d.Get("name").(string)
 	location := azureRMNormalizeLocation(d.Get("location").(string))
@@ -77,6 +85,12 @@ func resourceArmResourceGroupRead(d *schema.ResourceData, meta interface{}) erro
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
 
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
+
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
 		return fmt.Errorf("Error parsing Azure Resource ID %q: %+v", d.Id(), err)
@@ -108,6 +122,12 @@ func resourceArmResourceGroupExists(d *schema.ResourceData, meta interface{}) (b
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
 
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
+
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
 		return false, fmt.Errorf("Error parsing Azure Resource ID %q: %+v", d.Id(), err)
@@ -130,6 +150,12 @@ func resourceArmResourceGroupExists(d *schema.ResourceData, meta interface{}) (b
 func resourceArmResourceGroupDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).resourceGroupsClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {

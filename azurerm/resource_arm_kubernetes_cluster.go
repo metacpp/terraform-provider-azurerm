@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
+	"github.com/Azure/go-autorest/tracing"
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -14,8 +15,10 @@ import (
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/kubernetes"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/suppress"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
+	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/validate"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
+	"go.opencensus.io/trace"
 )
 
 func resourceArmKubernetesCluster() *schema.Resource {
@@ -521,6 +524,12 @@ func resourceArmKubernetesClusterCreateUpdate(d *schema.ResourceData, meta inter
 	ctx := meta.(*ArmClient).StopContext
 	tenantId := meta.(*ArmClient).tenantId
 
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
+
 	log.Printf("[INFO] preparing arguments for Managed Kubernetes Cluster create/update.")
 
 	resGroup := d.Get("resource_group_name").(string)
@@ -609,6 +618,12 @@ func resourceArmKubernetesClusterCreateUpdate(d *schema.ResourceData, meta inter
 func resourceArmKubernetesClusterRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).kubernetesClustersClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
@@ -707,6 +722,12 @@ func resourceArmKubernetesClusterRead(d *schema.ResourceData, meta interface{}) 
 func resourceArmKubernetesClusterDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).kubernetesClustersClient
 	ctx := meta.(*ArmClient).StopContext
+
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		ctx, span = trace.StartSpan(ctx, util.GetCallFuncName(1))
+		defer span.End()
+	}
 
 	id, err := parseAzureResourceID(d.Id())
 	if err != nil {
