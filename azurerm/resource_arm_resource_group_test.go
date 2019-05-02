@@ -9,19 +9,18 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/tf"
-	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/helpers/util"
 	"go.opencensus.io/trace"
 )
 
 func TestAccAzureRMResourceGroup_basic(t *testing.T) {
-	if tracing.IsEnabled() {
-		var span *trace.Span
-		sharedContext, span = trace.StartSpan(sharedContext, util.GetCallFuncName(1))
-		defer span.End()
-	}
-
 	resourceName := "azurerm_resource_group.test"
 	ri := tf.AccRandTimeInt()
+
+	if tracing.IsEnabled() {
+		var span *trace.Span
+		sharedContext, span = trace.StartSpan(sharedContext, fmt.Sprintf("TestAccAzureRMResourceGroup_basic_%d", ri))
+		defer span.End()
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
